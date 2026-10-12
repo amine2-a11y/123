@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" manifest="AMINE PS4.manifest">
+<html lang="en" manifest="PSPulse.manifest">
 <head>
     <link rel="icon" type="image/png" href="../pspulse.png">
     <meta charset="UTF-8">
@@ -50,6 +50,14 @@ button, input, select { accent-color:#22b8ff; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition:none !important; animation:none !important; } }
 
 </style>
+
+<style id="amine-zombie-theme-visibility-fix">
+/* AMINE-ZOMBIE-THEME-FIX-START */
+html, body { min-height:100%; background-color:#05070b !important; }
+body { background-image: linear-gradient(rgba(3,5,10,.58), rgba(3,5,10,.72)), url("zombie-bg.jpg") !important; background-position:center center !important; background-size:cover !important; background-repeat:no-repeat !important; background-attachment:fixed !important; }
+/* Keep panels readable above the horror artwork */
+/* AMINE-ZOMBIE-THEME-FIX-END */
+</style>
 </head>
 <body>
     <div class="app">
@@ -89,8 +97,7 @@ button, input, select { accent-color:#22b8ff; }
                 setCached(true);
                 setProgress(100);
                 progressLabel.innerHTML = message;
-                cacheStatus.innerHTML = 'Opening the cached host...';
-                setTimeout(function () { window.location.replace('index.html'); }, 1200);
+                cacheStatus.innerHTML = 'Cache is ready. This page will stay open; press Back when you want to leave.';
             }
             if (!appCache) {
                 progressLabel.innerHTML = 'Offline cache is not supported by this browser.';
@@ -116,7 +123,7 @@ button, input, select { accent-color:#22b8ff; }
             appCache.onerror = function () {
                 setCached(false);
                 progressLabel.innerHTML = 'Offline cache failed.';
-                cacheStatus.innerHTML = 'Stay online, clear browser data, and reload this page.';
+                cacheStatus.innerHTML = 'Cache failed. Stay online, verify manifest paths, then reload this page.';
             };
             appCache.onobsolete = appCache.onerror;
         }());
