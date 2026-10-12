@@ -153,6 +153,14 @@ button, input, select { accent-color:#22b8ff; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition:none !important; animation:none !important; } }
 
 </style>
+
+<style id="amine-zombie-theme-visibility-fix">
+/* AMINE-ZOMBIE-THEME-FIX-START */
+html, body { min-height:100%; background-color:#05070b !important; }
+body { background-image: linear-gradient(rgba(3,5,10,.58), rgba(3,5,10,.72)), url("zombie-bg.jpg") !important; background-position:center center !important; background-size:cover !important; background-repeat:no-repeat !important; background-attachment:fixed !important; }
+/* Keep panels readable above the horror artwork */
+/* AMINE-ZOMBIE-THEME-FIX-END */
+</style>
 </head>
 <body>
     <div class="app">
@@ -227,29 +235,27 @@ button, input, select { accent-color:#22b8ff; }
 
     <script>
         (function () {
-            // Tiny firmware router: no libraries, network calls, timers or preloads.
-            // The PS4 browser may hide its firmware in the user-agent; in that
-            // case keep the manual menu available rather than guessing.
+            // One direct route only: cache install page, no version picker and no new tabs.
             var ua = navigator.userAgent || '';
             var match = ua.match(/PlayStation 4[ \/]([0-9]+\.[0-9]+)/i) || ua.match(/PS4[^0-9]*([0-9]+\.[0-9]+)/i);
             var status = document.getElementById('detect-status');
-            var first = document.querySelector('.row');
             function go(path) { window.location.replace(path); }
-            if (match) {
-                var v = parseFloat(match[1]);
-                if (status) status.innerHTML = '[ <b>ok</b> ] firmware ' + match[1] + ' detected; opening matching host';
-                if (v >= 13.02 && v <= 13.52) go('1352/index.html');
-                else if ((v >= 11.00 && v <= 12.02) || (v >= 12.50 && v <= 13.00)) go('1300/index.html');
-                else if (v >= 9.00 && v <= 9.60) go('900/version-selector.html');
-                else if (v >= 7.00 && v <= 8.52) go('700/version-selector.html');
-                else if (Math.abs(v - 6.72) < 0.001) go('672/index.html');
-                else if (Math.abs(v - 5.05) < 0.001) go('505/index.html');
-                else if (v >= 6.00 && v <= 11.02) go('css/version-selector.html');
-                else if (status) status.innerHTML = '[ <b>!</b> ] firmware not mapped; select the correct route below';
-            } else if (status) {
-                status.innerHTML = '[ <b>!</b> ] firmware not exposed by browser; select your version below';
+            if (!match) {
+                if (status) status.innerHTML = '[ <b>!</b> ] firmware not exposed by browser; choose your firmware manually below';
+                return;
             }
-            if (first) first.focus();
+            var raw = match[1].split('.');
+            var major = parseInt(raw[0],10), minor = parseInt(raw[1] || '0',10);
+            var v = major + minor / 100;
+            if (status) status.innerHTML = '[ <b>ok</b> ] firmware ' + match[1] + ' detected; opening one cache page';
+            if (v >= 13.02 && v <= 13.52) go('1352/cache-install.html');
+            else if ((v >= 11.00 && v <= 12.02) || (v >= 12.50 && v <= 13.00)) go('1300/cache-install.html');
+            else if (Math.abs(v-9.00)<0.001 || (v >= 9.00 && v <= 9.60)) go('900/cache.html');
+            else if (v >= 7.00 && v <= 8.52) go('700/cache.html');
+            else if (Math.abs(v-6.72)<0.001) go('672/cache-install.html');
+            else if (Math.abs(v-5.05)<0.001) go('505/cache-install.html');
+            else if (v >= 6.00 && v <= 11.02) go('css/latest/cache-install.html');
+            else if (status) status.innerHTML = '[ <b>!</b> ] unsupported/unknown firmware; choose a compatible route below';
         })();
     </script>
 

@@ -273,3 +273,7 @@ The root page now performs a small local-only user-agent check and redirects onl
 - Applied a unified lightweight CSS visual layer across HTML pages; exploit JavaScript and payload binaries were not rewritten as part of the theme refresh.
 - GoldHEN version chooser pages now display only v2.4b18.12. This does not prove that this GoldHEN build is compatible with every firmware; firmware support remains dependent on the underlying host and payload.
 - Validation performed: archive integrity and HTML/CSS presence checks. Real PS4 cache/offline behavior still requires device testing.
+
+
+## Automatic offline-cache landing pages
+The root index now uses one `location.replace()` to route detected firmware to a cache-only page. Cache landing pages do not run payloads, open tabs, or redirect after installation. AppCache still requires a compatible PS4 browser and valid hosted manifest paths; test on-console before relying on offline mode.
