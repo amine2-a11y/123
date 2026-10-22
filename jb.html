@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Loading the GoldHEN payload — henjb.com</title>
+<!-- The step the console lands on mid-jailbreak. Worth a real title so a
+     bookmark or a history entry makes sense, but not worth indexing: it is
+     reached from the front page and shows nothing on its own. -->
+<meta name="robots" content="noindex,follow">
+<meta name="theme-color" content="#f6f4ef">
+<style>
+  * { box-sizing: border-box; }
+  html { height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100%;
+    /* same dot-grid "paper" as the landing page */
+    background:
+      radial-gradient(rgba(25,24,23,.06) 1px, transparent 1px) 0 0 / 22px 22px,
+      #f6f4ef;
+    color: #191817;
+    font: 15px/1.5 "Segoe UI", system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 26px;
+    overflow-x: hidden;
+  }
+
+  .bottom-bar { position: fixed; bottom: 20px; left: 20px; z-index: 10001; }
+  #back-btn {
+    display: inline-block;
+    padding: 9px 17px;
+    background: #fefdfb;
+    color: #191817;
+    border: 2px solid #191817;
+    border-radius: 10px 3px 12px 3px / 3px 12px 3px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-decoration: none;
+    box-shadow: 3px 3px 0 rgba(25,24,23,.15);
+    transition: background .12s ease, color .12s ease;
+  }
+  #back-btn:hover { background: #191817; color: #f6f4ef; }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .mark { width: 132px; height: 132px; }
+  .ink { fill: none; stroke: #191817; stroke-linecap: round; stroke-linejoin: round; }
+  #ring { stroke-width: 3; }
+  .check { stroke-width: 5; opacity: 0; animation: show .5s 1s ease-out forwards; }
+  @keyframes show { to { opacity: 1; } }
+
+  .label {
+    font: 700 13px/1 Consolas, "Cascadia Mono", monospace;
+    letter-spacing: .38em;
+    text-indent: .38em;
+    text-transform: uppercase;
+    color: #191817;
+  }
+
+  /* hand-drawn progress line (transform only: cheap) */
+  .bar {
+    width: 168px;
+    height: 7px;
+    border: 2px solid #191817;
+    border-radius: 100px 14px 100px 14px / 14px 100px 14px 100px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: #191817;
+    transform-origin: left center;
+    animation: fill 2.8s cubic-bezier(.5,0,.5,1) infinite;
+  }
+  @keyframes fill { 0% { transform: scaleX(0); } 55% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+
+  #msg {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 14px;
+    color: #191817;
+    display: none;
+    z-index: 10000;
+  }
+  body.fail #msg { display: block; }
+  body.done .stage, body.fail .stage { display: none; }
+
+  #popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(246,244,239,.94);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s ease, visibility .3s ease;
+  }
+  #popup-overlay.show { opacity: 1; visibility: visible; }
+
+  .popup-box {
+    background: #fefdfb;
+    border: 2px solid #191817;
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    padding: 30px;
+    width: 90%;
+    max-width: 430px;
+    text-align: center;
+    box-shadow: 7px 8px 0 rgba(25,24,23,.14);
+    transform: scale(.94);
+    transition: transform .3s ease;
+  }
+  #popup-overlay.show .popup-box { transform: scale(1); }
+
+  .popup-title {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #191817;
+    margin-bottom: 10px;
+  }
+  .popup-desc { font-size: 14px; color: #4a453d; margin-bottom: 20px; }
+  .popup-btn {
+    display: block;
+    width: 100%;
+    padding: 15px 20px;
+    background: #191817;
+    color: #f6f4ef;
+    border: 2px solid #191817;
+    border-radius: 12px 4px 14px 4px / 4px 14px 4px 12px;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: .04em;
+    text-decoration: none;
+    transition: background .12s ease;
+  }
+  .popup-btn:hover { background: #2b2927; }
+  /* The fill swept 0-100-0 forever, which says nothing, and it kept sweeping
+     after the jailbreak had finished. One pass, left to right, held at the end. */
+  /* One pass, then it stays full. The original swept 0-1-0 forever, so it said
+     nothing, and it went on saying it after the jailbreak had finished. The
+     first attempt at this pinned it at the ending keyframe, which was 0 - hence
+     a bar that never moved at all. These keyframes end at full, so holding at
+     the end means full. */
+  /* An indeterminate sweep while the exploit runs, stopped when it finishes.
+     It used to be a 2.8s animation that filled to 100% regardless of what was
+     happening, so it claimed success while nothing had run. It cannot report
+     real progress - only the exploit knows its phases - so it must not pretend
+     to be a progress meter. */
+  .bar-fill { animation: fill 1.5s cubic-bezier(.5,0,.5,1) infinite !important;
+              transform-origin: left center; }
+  @keyframes fill { 0% { transform: scaleX(0); } 50% { transform: scaleX(1); }
+                    100% { transform: scaleX(0); } }
+  .bar.done .bar-fill { animation: none !important; transform: scaleX(1); }
+</style>
+</head>
+<body>
+  <div class="bottom-bar"><a href="./" id="back-btn">Back</a></div>
+
+  <div class="stage">
+    <svg class="mark" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <g>
+        <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100"
+                          dur="9s" repeatCount="indefinite"/>
+        <path id="ring" class="ink" />
+      </g>
+      <path class="ink check" d="M68 102 Q84 118 92 124 Q118 96 134 74" />
+    </svg>
+    <div class="label" id="loading-text">Working</div>
+    <!-- progress bar removed: it could not report anything real -->
+  </div>
+
+  <div id="popup-overlay" role="dialog" aria-modal="true" aria-labelledby="popup-title" aria-describedby="popup-desc">
+    <div class="popup-box" role="status" aria-live="polite">
+      <div class="popup-title" id="popup-title">Complete</div>
+      <div class="popup-desc" id="popup-desc">Jailbreak and payload loaded. You can disconnect the internet now.</div>
+      <a class="popup-btn" href="./" id="popup-btn">Back to Home</a>
+    </div>
+  </div>
+
+  <div id="msg"></div>
+
+<script>
+/* hand-drawn (wobbly, closed) circle, same look as the landing page */
+(function () {
+  var ring = document.getElementById("ring");
+  var cx = 100, cy = 100, R = 66, N = 44, pts = [];
+  for (var i = 0; i < N; i++) {
+    var a = (i / N) * Math.PI * 2;
+    var w = Math.sin(i * 12.9898) * 2.7 + Math.sin(i * 4.14) * 1.9 + Math.sin(i * 1.73) * 1.3;
+    var rr = R + w;
+    pts.push((cx + Math.cos(a) * rr).toFixed(1) + " " + (cy + Math.sin(a) * rr).toFixed(1));
+  }
+  ring.setAttribute("d", "M" + pts.join(" L") + " Z");
+})();
+</script>
+
+<script type="module">
+  /* A restored page must not re-run the exploit. The console's browser reopens
+     the last page when it starts, and this one would begin the moment it
+     opened - which left the user racing the Back button to stop it. Only a
+     deliberate launch from the front page carries a token that is still stored,
+     and reading it consumes it, so a reload or a restore finds nothing and
+     waits to be asked instead. */
+  const q = new URLSearchParams(location.search);
+  let stored = null;
+  try {
+    stored = sessionStorage.getItem("jb-once");
+    sessionStorage.removeItem("jb-once");
+  } catch (e) {}
+  const once = q.get("once");
+  let completed = false;
+  let stopped = false;
+  let timeout = null;
+
+  if (once && stored && once === stored) {
+    // Clean the address bar only after jb.js has read the payload path out of
+    // it: the query string holds a payload URL, and a restored tab should not
+    // show it, leak it, or be able to repeat the run from it.
+    import("./jb.js?v=20261003-audit1").then(function () {
+      try { history.replaceState(null, "", "./"); } catch (e) {}
+    }).catch(function () {
+      window.showFailure("A required script could not be loaded. Return home and reload to retry.", false);
+    });
+    timeout = setTimeout(() => window.showTimeout(), 83000);
+  } else {
+    // Reopened, reloaded or refreshed rather than launched: go home. This is the
+    // case that used to begin the exploit again the moment the browser opened.
+    location.replace("./");
+  }
+  if (false) {
+    const state = document.getElementById("state");
+    if (state) { state.textContent = "Not started"; }
+    const msg = document.getElementById("msg");
+    if (msg) {
+      const why = document.createElement("p");
+      why.textContent =
+        "This page runs the jailbreak. It has not started, because it was " +
+        "reopened or reloaded rather than opened from the front page.";
+      msg.appendChild(why);
+      const go = document.createElement("button");
+      go.type = "button";
+      go.textContent = "Run it now";
+      go.style.cssText =
+        "margin-top:16px;padding:14px 26px;font-size:17px;cursor:pointer;" +
+        "background:#191817;color:#f6f4ef;border:2px solid #191817;" +
+        "border-radius:12px 4px 14px 4px / 4px 14px 4px 12px;";
+      go.onclick = function () { import("./jb.js?v=10"); };
+      msg.appendChild(go);
+    }
+  }
+
+
+  function killInternet() {
+    window.addEventListener('online', (e) => { e.preventDefault(); }, true);
+    if (window.navigator && navigator.onLine) {
+      try {
+        Object.defineProperty(navigator, 'onLine', { get: () => false, configurable: true });
+      } catch (err) {}
+    }
+  }
+
+  function markBarDone() {
+    var b = document.querySelector(".bar");
+    if (b) { b.className = "bar done"; }
+  }
+
+  window.showDone = function () {
+    if (completed) return;
+    completed = true;
+    clearTimeout(timeout);
+    markBarDone();
+    // the payload hook fired, so this really did jailbreak: the landing page
+    // reads this back to say the console is already done
+    const when = String(Date.now());
+    try { sessionStorage.removeItem('jb-starting'); sessionStorage.setItem('jb-done', when); } catch (err) {}
+    try { localStorage.setItem('jb-done', when); } catch (err) {}
+    document.body.className = 'done';
+    document.getElementById('loading-text').textContent = 'Complete';
+    document.getElementById('popup-title').textContent = 'Complete';
+    document.getElementById('popup-desc').textContent = 'Jailbreak and payload loaded. You can disconnect the internet now.';
+    const popup = document.getElementById('popup-overlay');
+    if (popup) {
+      popup.classList.add('show');
+    }
+    document.getElementById('popup-btn').focus();
+  };
+  window.showFailure = function (message, restartRequired) {
+    if (completed) return;
+    stopped = true;
+    clearTimeout(timeout);
+    if (!restartRequired) {
+      try { sessionStorage.removeItem('jb-starting'); } catch (err) {}
+    }
+    document.body.className = 'fail';
+    document.getElementById('popup-title').textContent = 'Attempt stopped';
+    document.getElementById('popup-desc').textContent = message;
+    document.getElementById('popup-overlay').classList.add('show');
+    document.getElementById('popup-btn').focus();
+  };
+
+  /* Fallback: show the panel even if the payload hook never fires. This is NOT
+     proof of success - the exploit may simply have hung - so it says so, and it
+     does not record a jailbreak. */
+  window.showTimeout = function () {
+    if (completed || stopped) return;
+    markBarDone();
+    const title = document.getElementById('popup-title');
+    const desc = document.getElementById('popup-desc');
+    if (title) { title.textContent = 'Still working?'; }
+    if (desc) {
+      desc.textContent = 'No completion was confirmed. If the console is unresponsive, '
+        + 'restart it before trying again. Do not start another attempt while this one is running.';
+    }
+    const popup = document.getElementById('popup-overlay');
+    if (popup) { popup.classList.add('show'); }
+  };
+
+  /* Only speak up after a minute of silence. The jailbreak is usually quick, but
+     the page going quiet is not the same as it being stuck, and interrupting it
+     with a question is worse than waiting. */
+  // The timeout is armed only for a valid, deliberate launch above.
+</script>
+</body>
+</html>

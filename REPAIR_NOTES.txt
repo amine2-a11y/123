@@ -1,0 +1,11 @@
+HenJB offline package notes
+===========================
+
+- Fixed picker artwork paths: icon.png for Thumbnail and nav.png for XMB Logo.
+- Fixed favicon paths.
+- Disabled external builder configuration and requests; builder.json is empty.
+- Added local PC HTTP server launcher and Arabic instructions.
+- All 789 design entries have local icon.png/nav.png artwork.
+- payload.json matches payloads/goldhen.bin (293120 bytes; SHA-256 df3f27c1b35bc7c40e3a08caab948930914dc7d0301a73b68945cf6ffe40ea12).
+
+Limitations: the archive contains only the default GoldHEN payload. It cannot synthesize arbitrary mixed thumbnail/XMB payloads offline because the local builder is not included. Firmware 9.00 behavior was not tested on a physical console. The package is designed to run over a local PC-to-PS4 LAN with no internet; opening index.html directly as file:// may fail because browsers restrict local XHR.
