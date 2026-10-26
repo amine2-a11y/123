@@ -1,8 +1,0 @@
-Amine PS4 — original theme preserved
-
-The existing project theme/CSS has been kept unchanged. The page title is branded Amine PS4.
-The built-in PS4 picker lets you choose a GoldHEN settings Thumbnail and an XMB Logo separately.
-
-Offline limitation: this package can use the original shipped payload/design when available. Combining a thumbnail from one design with an XMB logo from another requires a compatible local payload builder and prebuilt payloads; this archive does not claim that arbitrary combinations work offline.
-
-For reliable local file access, run START_LOCAL_SERVER.bat on a PC and open the local page from the browser. GitHub Pages hosting by itself is online hosting, not an offline server. Firmware/exploit compatibility must be verified on the target console.
