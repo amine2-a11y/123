@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon" type="image/png" href="../pspulse.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMINE PS4 // PS4 7.00-8.52 HOST</title>
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1c1c1c;
+            --panel-2: #242424;
+            --line: #2e2e2e;
+            --line-bright: #454545;
+            --text: #f5f5f5;
+            --muted: #b5b5b5;
+            --dim: #828282;
+            --accent: #a294ff;
+            --red: #ff9b9b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { background: var(--bg); }
+        html, body { min-height: 100%; }
+        body {
+            background-color: var(--bg);
+            background-image: linear-gradient(rgba(162, 148, 255, .05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(162, 148, 255, .05) 1px, transparent 1px);
+            background-size: 36px 36px;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            font: 17px/1.4 Consolas, "Liberation Mono", monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        a { color: inherit; }
+
+        .app { display: flex; flex: 1 0 auto; flex-direction: column; margin: 0 auto; padding: 14px 26px 12px; width: min(100% - 52px, 1220px); }
+
+        /* Top status bar */
+        .bar {
+            align-items: center;
+            border: 1px solid var(--line-bright);
+            display: flex;
+            font-size: 14px;
+            justify-content: space-between;
+            letter-spacing: .1em;
+            padding: 10px 16px;
+            text-transform: uppercase;
+        }
+        .bar b { color: var(--accent); font-weight: 400; }
+        .bar-fw { color: var(--dim); }
+        .bar-fw::before { color: var(--accent); content: "\25CF "; }
+
+        .layout { display: flex; flex: 1 0 auto; flex-direction: column; padding: 20px 0 0; }
+
+        /* Header */
+        .kicker { color: var(--accent); font-size: 14px; letter-spacing: .14em; margin: 0 0 12px; }
+        h1 { font-size: clamp(34px, 5vw, 56px); font-weight: 400; letter-spacing: -.07em; line-height: 1; margin: 0; }
+        h1 em { color: var(--accent); font-style: normal; }
+        .sub { color: var(--muted); font-size: 17px; margin: 13px 0 0; max-width: 720px; }
+        .boot { color: var(--dim); font-size: 14px; list-style: none; margin: 12px 0 0; }
+        .boot li { margin: 3px 0; }
+        .boot b { color: var(--accent); font-weight: 400; }
+        .fw-display { border-left: 2px solid var(--accent); color: var(--text); display: inline-block; font-size: 15px; margin-top: 12px; padding: 5px 10px; }
+
+        /* Status */
+        .status {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            margin-top: 20px;
+            padding: 14px 16px;
+        }
+        /* loader.js toggles these two classes on #notify - keep both defined */
+        .notification, .notification2 {
+            background: var(--panel-2);
+            border: 1px solid var(--line-bright);
+            color: var(--text);
+            min-height: 42px;
+            padding: 10px 14px;
+        }
+        #log { color: var(--text); font-size: 16px; line-height: 1.45; }
+        #log h1 { color: var(--text) !important; font-size: 16px; font-weight: 400; line-height: 1.45; margin: 0; }
+        #console { display: none !important; }
+        .jailbreak-status {
+            border-left: 2px solid var(--accent);
+            color: var(--accent);
+            font-size: 17px;
+            margin-top: 10px;
+            padding: 4px 10px;
+        }
+        .status-meta {
+            align-items: center;
+            border-top: 1px solid var(--line);
+            color: var(--dim);
+            display: flex;
+            flex-wrap: wrap;
+            font-size: 14px;
+            gap: 10px 16px;
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+        .status-pass { color: var(--accent); }
+        .status-fail { color: var(--red); }
+
+        /* Controls */
+        .controls { border: 1px solid var(--line); margin-top: 14px; padding: 14px; }
+        .section-title {
+            border-bottom: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 14px;
+            letter-spacing: .12em;
+            margin-bottom: 11px;
+            padding: 0 4px 10px;
+            text-transform: uppercase;
+        }
+        .grid { display: grid; gap: 8px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .grid button {
+            background: var(--panel);
+            border: 1px solid var(--line-bright);
+            color: var(--text);
+            cursor: pointer;
+            font: inherit;
+            min-height: 48px;
+            padding: 10px 14px;
+            text-align: left;
+        }
+        .grid button:hover, .grid button:focus {
+            background: var(--panel-2);
+            border-color: var(--accent);
+            color: var(--accent);
+            outline: 0;
+        }
+        .grid button:focus { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+
+        /* NodePlay */
+        .nodeplay {
+            align-items: center;
+            background: var(--panel);
+            border: 1px solid var(--line-bright);
+            display: flex;
+            justify-content: space-between;
+            margin-top: 14px;
+            min-height: 68px;
+            padding: 10px 18px;
+            text-decoration: none;
+        }
+        .nodeplay:hover, .nodeplay:focus { background: var(--panel-2); border-color: var(--accent); outline: 0; }
+        .nodeplay:focus { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+        .np-label { color: var(--dim); display: block; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+        .np-name { color: var(--text); display: block; font-size: 24px; margin-top: 2px; }
+        .np-name b { color: var(--accent); font-weight: 400; }
+        .np-open { color: var(--accent); font-size: 14px; }
+
+        /* Footer */
+        .foot {
+            border-top: 1px solid var(--line);
+            color: var(--dim);
+            font-size: 13px;
+            margin-top: 16px;
+            padding: 12px 4px 2px;
+            text-align: center;
+        }
+        .foot a { color: var(--muted); }
+        .foot a:hover, .foot a:focus { color: var(--accent); }
+
+        @media (max-width: 820px) {
+            body { overflow: auto; }
+            .app { padding: 8px 10px; width: min(100% - 20px, 560px); }
+            .bar { font-size: 12px; padding: 8px 12px; }
+            .layout { padding-top: 14px; }
+            h1 { font-size: 38px; }
+            .sub { font-size: 16px; }
+            .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 430px) {
+            .grid { grid-template-columns: 1fr; }
+            h1 { font-size: 34px; }
+        }
+    </style>
+    <script>
+        if (window.applicationCache && window.applicationCache.status == 0) {
+            window.location.replace("cache.html");
+        }
+    </script>
+    <script defer src="payloads.js"></script>
+    <script defer src="loader.js"></script>
+    <script type="module" src="alert.mjs"></script>
+
+<style id="amine-zombie-pro-theme-v3">
+:root { --amine-toxic:#b9f36b; --amine-blood:#b83c42; --amine-glass:rgba(7,12,10,.76); }
+html { background:#080b09 !important; }
+body { background-color:#080b09 !important; background-image:linear-gradient(180deg,rgba(3,6,5,.64),rgba(3,6,5,.78)),url("../zombie-bg.jpeg") !important; background-position:center center !important; background-size:cover !important; background-repeat:no-repeat !important; background-attachment:fixed !important; color:#f0f4ed !important; }
+/* Consistent survival-horror palette across every firmware page */
+.app { position:relative; z-index:1; }
+.bar, .status, .status-meta, .section-title, .panel, .card, .cache-panel, .progress-wrapper, .progress-container { background-color:rgba(7,12,10,.62) !important; border-color:rgba(185,243,107,.38) !important; box-shadow:0 8px 28px rgba(0,0,0,.20); }
+h1 em, .kicker, .bar b, .bar-fw::before, .bar-ready::before, .boot b, .section-title, .progress-label, .progress-text { color:var(--amine-toxic) !important; }
+button, .button, input[type=button], input[type=submit] { border-color:rgba(185,243,107,.62) !important; }
+button:hover, .button:hover, input[type=button]:hover, input[type=submit]:hover { background-color:rgba(185,243,107,.16) !important; }
+.progress-fill, #myBar { background:linear-gradient(90deg,#6b9d32,#d7f57a) !important; }
+/* Center footer/support icons on cache screens without changing their actions */
+.pspulse-support, .support, .footer-icons, .social-links { display:flex; justify-content:center; align-items:center; gap:14px; margin-left:auto; margin-right:auto; }
+footer { text-align:center; }
+@media (max-width:700px) { .app { width:100% !important; padding:12px 14px !important; } h1 { letter-spacing:-.035em !important; } }
+</style>
+<style id="amine-apocalypse-pro">
+
+/* AMINE PS4 // APOCALYPSE PRO — visual layer only */
+:root {
+ --ap-green:#c9f36b; --ap-green2:#8dbb3f; --ap-red:#ef5b55;
+ --ap-white:#f4f5ef; --ap-muted:#c2c9bf; --ap-glass:rgba(9,15,13,.78);
+ --ap-border:rgba(201,243,107,.42); --ap-shadow:0 18px 48px rgba(0,0,0,.42);
+}
+html { background:#080b09 !important; min-height:100%; }
+body { position:relative; isolation:isolate; min-height:100vh !important; overflow-x:hidden !important;
+ background:transparent !important; color:var(--ap-white) !important;
+ font-family:Arial,Helvetica,sans-serif !important; line-height:1.48 !important; }
+body::before { content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
+ background-image:linear-gradient(90deg,rgba(3,7,6,.70),rgba(4,9,7,.47) 48%,rgba(3,7,6,.72)),
+ linear-gradient(0deg,rgba(2,5,4,.70),rgba(2,5,4,.20) 45%,rgba(2,5,4,.38)),
+ url("../zombie-bg.jpeg"); background-size:cover,cover,cover; background-position:center,center,center;
+ background-repeat:no-repeat; transform:translateZ(0); }
+body::after { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.18;
+ background:radial-gradient(ellipse at 50% 42%,transparent 0%,rgba(0,0,0,.62) 100%); }
+* { box-sizing:border-box; }
+a { color:var(--ap-green) !important; text-decoration:none; }
+a:hover { color:#fff !important; }
+.app { width:min(100% - 36px,1060px) !important; max-width:1060px !important; min-height:100vh !important;
+ margin:0 auto !important; padding:22px 0 24px !important; gap:18px !important; }
+.bar { min-height:52px; padding:12px 18px !important; gap:12px; flex-wrap:wrap;
+ background:rgba(5,10,8,.72) !important; border:1px solid var(--ap-border) !important;
+ border-radius:14px !important; box-shadow:var(--ap-shadow); backdrop-filter:blur(5px);
+ color:var(--ap-white) !important; letter-spacing:.08em !important; font-size:13px !important; }
+.bar b,.kicker,.boot b,.section-title,.bar-fw,.fw-display,.menu-title { color:var(--ap-green) !important; }
+.layout { width:100%; max-width:900px; margin:clamp(10px,4vh,42px) auto 0 !important;
+ padding:clamp(20px,4vw,42px) !important; border:1px solid rgba(201,243,107,.25) !important;
+ border-radius:22px !important; background:linear-gradient(135deg,rgba(7,13,10,.87),rgba(10,17,13,.74)) !important;
+ box-shadow:var(--ap-shadow); backdrop-filter:blur(6px); }
+h1 { color:#f8f9f2 !important; font-family:Arial,Helvetica,sans-serif !important;
+ font-size:clamp(28px,4.2vw,48px) !important; line-height:1.08 !important; letter-spacing:-.035em !important;
+ margin:8px 0 14px !important; text-shadow:0 3px 18px rgba(0,0,0,.55); }
+h1 em { color:var(--ap-green) !important; font-style:normal !important; }
+.sub { color:#d5dbd2 !important; max-width:760px; font-size:15px !important; }
+.kicker { font-size:11px !important; font-weight:700; letter-spacing:.18em !important; text-transform:uppercase; }
+.boot { padding:12px 16px !important; margin:18px 0 !important; border:1px solid rgba(201,243,107,.19) !important;
+ border-radius:12px !important; background:rgba(0,0,0,.23) !important; color:#d6ddd3 !important; }
+.boot li { margin:3px 0; }
+.status,.jailbreak-status,.status-message,.progress-container,.menu,.version-card,.card-action,.status-meta,
+.grid-goldhen,.controls,.chain-options { border:1px solid rgba(201,243,107,.26) !important; border-radius:14px !important;
+ background:rgba(5,11,8,.76) !important; box-shadow:0 8px 25px rgba(0,0,0,.2); }
+.status,.progress-container,.controls,.menu { padding:16px !important; }
+.status-meta { display:flex; flex-wrap:wrap; gap:10px 18px; padding:10px 12px !important; margin-top:10px !important; }
+.status-pass { color:var(--ap-green) !important; }
+.status-fail,.status-fail * { color:#ff8d83 !important; }
+button,.go,.menu a,.version-card,.card-action,.chain-option { transition:background .15s,border-color .15s,transform .15s; }
+button,.go,.menu a,.card-action { min-height:42px; border:1px solid rgba(201,243,107,.56) !important;
+ border-radius:10px !important; background:linear-gradient(135deg,rgba(34,55,28,.96),rgba(14,28,19,.96)) !important;
+ color:#f7f9ef !important; font-weight:700 !important; padding:11px 16px !important; box-shadow:0 5px 16px rgba(0,0,0,.22); }
+button:hover,.go:hover,.menu a:hover,.card-action:hover { background:linear-gradient(135deg,#425d2a,#182d1d) !important; border-color:var(--ap-green) !important; }
+button:focus,.go:focus,a:focus { outline:2px solid var(--ap-green) !important; outline-offset:3px; }
+.grid,.version-grid { gap:12px !important; }
+.section-title { font-weight:700; letter-spacing:.1em; text-transform:uppercase; font-size:12px !important; }
+.fw-display { border:1px solid var(--ap-border) !important; border-radius:10px !important; background:rgba(21,39,22,.78) !important;
+ padding:10px 14px !important; }
+.foot { margin:14px auto 0 !important; text-align:center !important; color:#c5cdc2 !important; font-size:11px !important; opacity:.9; }
+.nodeplay,.np-open { border-radius:12px !important; background:rgba(5,10,8,.78) !important; border-color:rgba(201,243,107,.28) !important; }
+input,select { background:rgba(4,9,7,.9) !important; color:#fff !important; border:1px solid rgba(201,243,107,.4) !important; border-radius:8px !important; }
+.progress-wrapper { padding:5px !important; border-radius:12px !important; background:rgba(0,0,0,.5) !important; border:1px solid rgba(201,243,107,.45) !important; }
+.progress-bar { min-height:28px; border-radius:8px !important; background:rgba(255,255,255,.07) !important; overflow:hidden; }
+.progress-fill { background:linear-gradient(90deg,#638d32,#c9f36b) !important; border-radius:7px !important; }
+.progress-text { color:#10170b !important; font-weight:800 !important; text-shadow:none !important; }
+/* centered compact emblem row, especially visible beneath cache progress */
+.ap-emblems { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:12px; margin:18px auto 2px; }
+.ap-emblems span { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-width:112px; padding:8px 13px;
+ border:1px solid rgba(201,243,107,.32); border-radius:999px; background:rgba(4,9,7,.72); color:#eaf3df;
+ font-size:11px; font-weight:700; letter-spacing:.08em; }
+.ap-emblems i { width:7px; height:7px; display:inline-block; border-radius:50%; background:var(--ap-green); box-shadow:0 0 10px rgba(201,243,107,.65); }
+/* avoid tiny content being vertically centered or clipped by old layout rules */
+@media (max-width:700px) { .app { width:calc(100% - 24px) !important; padding-top:12px !important; }
+ .layout { padding:18px !important; margin-top:6px !important; } .bar { font-size:11px !important; }
+ button,.go,.menu a,.card-action { width:100%; } .ap-emblems span { min-width:100px; } }
+
+</style>
+</head>
+
+<body onload="if (window.ps4FirmwareSupported) load_exploit();">
+    <div class="app">
+        <header class="bar">
+            <span><b>AMINE PS4</b> // SURVIVAL HOST</span>
+            <span class="bar-fw">fw 7.00-8.52 ready</span>
+        </header>
+
+        <main class="layout">
+            <p class="kicker">$ ./launch --psfree-7xx</p>
+            <h1>PSFree <em>7.00-8.52</em> host</h1>
+            <p class="sub">Online and offline Lapse auto GoldHEN by PlayStation Pulse.</p>
+            <ul class="boot">
+                <li>[ <b>ok</b> ] psfree 1.7 chain ready</li>
+                <li>[ <b>ok</b> ] goldhen v2.4b18.12 staged</li>
+                <li>[ <b>ok</b> ] offline cache ready</li>
+            </ul>
+            <p class="fw-display">FW - <span id="PS4fw"></span></p>
+
+            <div class="status">
+                <div id="notify" class="notification"><div id="log"></div></div>
+                <pre id="console" style="display:none" aria-hidden="true"></pre>
+                <div class="jailbreak-status" id="msgs2">Ready to Jailbreak</div>
+                <div class="status-meta">
+                    <span class="status-pass">Successful attempts: <span id="passCounter">0</span></span>
+                    <span class="status-fail">Unsuccessful attempts: <span id="failCounter">0</span></span>
+                </div>
+            </div>
+
+            <section class="controls">
+                <div class="section-title">Payloads</div>
+                <div class="grid">
+                    <button onclick="load_PSFreeFix()" onMouseOver="document.getElementById('msgs2').innerHTML='PSFree Fix - Fixes PS4 PSFree exploit issues'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">PSFree Fix</button>
+                    <button onclick="load_ftp()" onMouseOver="document.getElementById('msgs2').innerHTML='FTP Server - Start FTP server for file access'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">FTP Server</button>
+                    <button onclick="load_ps4debug()" onMouseOver="document.getElementById('msgs2').innerHTML='PS4Debug - Enable debugging features'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">PS4Debug</button>
+                    <button onclick="load_app2usb()" onMouseOver="document.getElementById('msgs2').innerHTML='App2USB - Transfer applications to USB storage'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">App2USB</button>
+                    <button onclick="load_backup()" onMouseOver="document.getElementById('msgs2').innerHTML='Backup - Backup system data to USB'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">Backup</button>
+                    <button onclick="load_restore()" onMouseOver="document.getElementById('msgs2').innerHTML='Restore - Restore system data from USB'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">Restore</button>
+                    <button onclick="load_disable_updates()" onMouseOver="document.getElementById('msgs2').innerHTML='Disable Updates - Block system updates'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">Disable Updates</button>
+                    <button onclick="load_enable_updates()" onMouseOver="document.getElementById('msgs2').innerHTML='Enable Updates - Allow system updates'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">Enable Updates</button>
+                    <button onclick="load_appcache_install()" onMouseOver="document.getElementById('msgs2').innerHTML='AppCache Install - Install application cache'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">AppCache Install</button>
+                    <button onclick="load_history_blocker()" onMouseOver="document.getElementById('msgs2').innerHTML='History Blocker - Block browser history tracking'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">History Blocker</button>
+                    <button onclick="load_pup_decrypt()" onMouseOver="document.getElementById('msgs2').innerHTML='PUP Decrypt - Decrypt PS4 update files'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">PUP Decrypt</button>
+                    <button onclick="load_rif_renamer()" onMouseOver="document.getElementById('msgs2').innerHTML='RIF Renamer - Manage license files'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">RIF Renamer</button>
+                    <button onclick="load_webrte()" onMouseOver="document.getElementById('msgs2').innerHTML='WebRTE - Real-time editing features'" onmouseout="document.getElementById('msgs2').innerHTML='Ready to Jailbreak'">WebRTE</button>
+                </div>
+            </section>
+
+            <a class="nodeplay" href="https://nodeplay.net/" target="_blank" rel="noopener">
+                <span><span class="np-label">Premium game servers</span><span class="np-name">Node<b>Play</b></span></span>
+                <span class="np-open">OPEN &#8599;</span>
+            </a>
+
+            <footer class="foot">
+                Author: <a href="https://t.me/sudoBlackArch">BlackArch</a> // Telegram: <a href="https://t.me/PlayStation_Pulse">PlayStation Pulse</a>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+// Firmware detection
+        UA = navigator.userAgent.substring(navigator.userAgent.indexOf("6.72 (") + 28, navigator.userAgent.indexOf(") Apple"));
+        // 7.xx
+        if (UA == "layStation 4/7.00") UA = "7.00";
+        if (UA == "layStation 4/7.01") UA = "7.01";
+        if (UA == "layStation 4/7.02") UA = "7.02";
+        if (UA == "layStation 4/7.50") UA = "7.50";
+        if (UA == "layStation 4/7.51") UA = "7.51";
+        if (UA == "layStation 4/7.55") UA = "7.55";
+        // 8.xx
+        if (UA == "layStation 4/8.00") UA = "8.00";
+        if (UA == "layStation 4/8.01") UA = "8.01";
+        if (UA == "layStation 4/8.03") UA = "8.03";
+        if (UA == "layStation 4/8.50") UA = "8.50";
+        if (UA == "layStation 4/8.52") UA = "8.52";
+
+        var supportedFW = ["7.00", "7.01", "7.02", "7.50", "7.51", "7.55", "8.00", "8.01", "8.03", "8.50", "8.52"];
+        window.ps4FirmwareSupported = supportedFW.indexOf(UA) !== -1;
+        if (!window.ps4FirmwareSupported)
+            alert("This Is For PS4 FW 7.xx - 8.xx Only!");
+        document.getElementById("PS4fw").innerHTML = "" + UA + "";
+
+        // Statistics initialization
+        if (localStorage.passcount == null || localStorage.passcount == undefined) localStorage.passcount = 0;
+        if (localStorage.failcount == null || localStorage.failcount == undefined) localStorage.failcount = 0;
+
+        // Update counters on page load
+        if (document.getElementById("passCounter")) {
+            document.getElementById("passCounter").innerHTML = localStorage.passcount;
+        }
+        if (document.getElementById("failCounter")) {
+            document.getElementById("failCounter").innerHTML = localStorage.failcount;
+        }
+    </script>
+
+<!-- PSPulse support link: intentionally lightweight for the PS4 browser. -->
+<style id="pspulse-support-style">
+.pspulse-support{position:fixed;right:18px;bottom:18px;z-index:2147483647;display:block;padding:10px 15px;border:1px solid #9b87ff;border-radius:4px;background:#17151f;color:#b7a9ff!important;font:600 13px Arial,sans-serif;letter-spacing:.2px;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.32)}
+.pspulse-support:hover,.pspulse-support:focus{background:#9b87ff;color:#101014!important;outline:none}
+</style>
+<a class="pspulse-support" href="https://sudoblackarch.github.io/support/" aria-label="Support me">Support me!</a>
+</body>
+
+</html>
