@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Amine PS4 • Auto Host</title>
+<style>
+:root{--bg:#0b1118;--panel:#121d28;--line:#243545;--text:#eaf2f8;--muted:#91a5b6;--accent:#43e0c1;--accent2:#4da8ff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
+body{font:16px/1.45 Arial,Helvetica,sans-serif;display:grid;place-items:center;min-height:100vh;padding:18px}
+.wrap{width:min(100%,650px)}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:12px;padding:12px 15px;background:#0f1822}
+.brand{font-weight:800;letter-spacing:.08em}.brand span{color:var(--accent)}.chip{font-size:12px;color:var(--accent);border:1px solid #2b665f;border-radius:99px;padding:5px 9px;white-space:nowrap}
+.card{margin-top:14px;padding:clamp(22px,5vw,36px);border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#142330,#101720 68%);box-shadow:0 18px 48px #0004}
+.mark{width:42px;height:4px;border-radius:9px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin-bottom:20px}
+h1{font-size:clamp(28px,6vw,42px);line-height:1.08;letter-spacing:-.04em;margin:0}h1 span{color:var(--accent)}
+p{color:var(--muted);margin:12px 0 0}.status{display:flex;align-items:center;gap:11px;border:1px solid var(--line);background:#0b141d;border-radius:10px;padding:13px 14px;margin-top:24px;font-size:14px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px #43e0c177;flex:none}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}.meta span{font-size:12px;color:#b5c6d3;border:1px solid var(--line);padding:6px 9px;border-radius:7px}
+.foot{font-size:11px;color:#65798a;text-align:center;margin-top:15px}
+/* AMINE PS4 — lightweight zombie-apocalypse theme */
+:root{--bg:#080d0a;--panel:#111a13;--panel-2:#19251a;--line:#293b2a;--line-bright:#3d5835;--text:#e9f1e5;--muted:#a4b49b;--dim:#71836b;--accent:#b5ef55;--red:#d75a55;--zombie-blood:#6d2527}
+html{background:var(--bg)}
+body{background-color:var(--bg);background-image:radial-gradient(ellipse at 15% 0%,rgba(123,160,54,.16),transparent 42%),radial-gradient(ellipse at 88% 35%,rgba(91,24,27,.13),transparent 38%),linear-gradient(180deg,#0b120c 0%,#080d0a 70%);color:var(--text);position:relative}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.22;background:radial-gradient(ellipse at 18% 45%,rgba(159,195,101,.12),transparent 28%),radial-gradient(ellipse at 78% 70%,rgba(151,43,43,.12),transparent 30%),repeating-linear-gradient(116deg,transparent 0 46px,rgba(190,210,160,.025) 47px,transparent 49px);}
+.app,.wrap{position:relative;z-index:1}
+.bar,.top{background:rgba(14,22,14,.94)!important;border-color:var(--line-bright)!important;box-shadow:0 5px 22px rgba(0,0,0,.18)}
+.card,.status,.controls,.nodeplay{background:linear-gradient(145deg,rgba(22,34,22,.97),rgba(12,18,13,.97))!important;border-color:var(--line)!important;box-shadow:0 12px 32px rgba(0,0,0,.22)}
+.brand span,.bar b,h1 em,.np-name b,.kicker,.boot b,.bar-fw:before,.dot,.progress-label,.progress-fill,.jailbreak-status,.status-pass{color:var(--accent)!important}
+.chip,.fw-display{color:var(--accent)!important;border-color:#526c36!important;background:rgba(23,37,20,.72)!important}
+.mark{background:linear-gradient(90deg,var(--accent),#5b8b38,var(--red))!important}
+.grid button:hover,.grid button:focus,.nodeplay:hover,.nodeplay:focus{border-color:var(--accent)!important;color:var(--accent)!important}
+.notification,.notification2,.progress-wrapper,.progress-bar{background:#0c140d!important;border-color:var(--line-bright)!important}
+.progress-fill{background:linear-gradient(90deg,#6d9f37,var(--accent))!important}
+.status-fail{color:var(--red)!important}
+.foot{border-color:var(--line)!important;color:var(--dim)!important}
+
+.wrap{position:relative;z-index:1}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="top"><div class="brand">AMINE <span>PS4</span></div><div class="chip">ZOMBIE MODE</div></header>
+<section class="card">
+<div class="mark"></div>
+<h1>Zombie <span>Host</span></h1>
+<p>Apocalypse mode • Detecting firmware and preparing the matching cache in this tab.</p>
+<div class="status"><i class="dot"></i><div><strong id="state">Detecting firmware…</strong><br><span id="detail">Please wait; this page will continue in the same tab.</span></div></div>
+<div class="meta"><span>LOW MEMORY</span><span>SINGLE TAB</span><span>GOLDHEN LATEST</span></div>
+</section>
+<footer class="foot">Amine PS4 • Local firmware routing</footer>
+</main>
+<script>
+(function(){
+  var ua=navigator.userAgent||"";
+  var m=ua.match(/PlayStation\s*4[\/ ]([0-9]+(?:\.[0-9]+)?)/i);
+  if(!m){m=ua.match(/([0-9]{1,2}\.[0-9]{2})(?=\)\s*AppleWebKit)/i);}
+  var fw=m?m[1]:"";
+  var n=parseFloat(fw);
+  var target="";
+  if(fw==="5.05") target="505/index.html";
+  else if(fw==="6.72") target="672/index.html";
+  else if(n>=7.00&&n<=8.52) target="700/cache.html";
+  else if(n>=9.00&&n<=9.60) target="900/cache.html";
+  else if(n>=6.00&&n<=10.71) target="css/latest/index.html";
+  else if(n>=11.00&&n<=13.00) target="1300/index.html";
+  else if(n>=13.02&&n<=13.52) target="1352/index.html";
+  var state=document.getElementById("state"),detail=document.getElementById("detail");
+  if(!target){state.textContent="Firmware not recognized";detail.textContent="Detected: "+(fw||"unknown")+". Open the host that matches your firmware.";return;}
+  state.textContent="Firmware "+fw+" detected";
+  detail.textContent="Preparing matching host and cache…";
+  window.setTimeout(function(){window.location.replace(target);},650);
+}());
+</script>
+</body>
+</html>
